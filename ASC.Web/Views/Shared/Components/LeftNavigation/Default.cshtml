@@ -1,0 +1,50 @@
+@using ASC.Web.Models
+@model List<NavigationMenuItem>
+
+<ul class="collapsible collapsible-accordion">
+    @foreach (var item in Model)
+    {
+        @if (item.IsNested && item.NestedItems.Any())
+        {
+            <li>
+                <a class="collapsible-header waves-effect" href="#!">
+                    <i class="material-icons">@item.MaterialIcon</i>
+                    @item.DisplayName
+                </a>
+                <div class="collapsible-body">
+                    <ul>
+                        @foreach (var nested in item.NestedItems)
+                        {
+                            @if (nested.DisplayName == "Reset Password")
+                            {
+                                <li><a id="ancrResetPassword" href="#!">@nested.DisplayName</a></li>
+                            }
+                            else
+                            {
+                                <li><a href="@nested.Link">@nested.DisplayName</a></li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </li>
+        }
+        else if (item.DisplayName == "Logout")
+        {
+            <li>
+                <a id="ancrLogout" class="collapsible-header waves-effect" href="#!">
+                    <i class="material-icons">@item.MaterialIcon</i>
+                    @item.DisplayName
+                </a>
+            </li>
+        }
+        else
+        {
+            <li>
+                <a class="collapsible-header waves-effect" href="@item.Link">
+                    <i class="material-icons">@item.MaterialIcon</i>
+                    @item.DisplayName
+                </a>
+            </li>
+        }
+    }
+</ul>

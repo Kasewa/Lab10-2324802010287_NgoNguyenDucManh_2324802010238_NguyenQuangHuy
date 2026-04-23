@@ -1,0 +1,204 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@model ASC.Web.Areas.Accounts.Models.ServiceEngineerViewModel
+@inject UserManager<IdentityUser> userManager
+
+@{
+    Layout = "_SecureLayout";
+}
+
+<div class="row"></div>
+<div class="row padding-left-20px padding-right-20px">
+    <div class="row z-depth-3">
+        <div class="section white-text padding-left-10px blue-grey lighten-1">
+            <h5>Users</h5>
+        </div>
+        <div class="divider"></div>
+        <div class="col s12 padding-bottom-15px">
+            @if (Model.ServiceEngineers != null)
+            {
+                <table class="highlight centered" id="tblServiceEngineers">
+                    <thead>
+                        <tr>
+                            <th data-field="Email">Email</th>
+                            <th data-field="UserName">Name</th>
+                            <th data-field="IsActiveImg">Is Active</th>
+                            <th data-field="Actions">Edit User</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.ServiceEngineers)
+                        {
+                            var identity = await userManager.GetClaimsAsync(user);
+                            <tr>
+                                <td>@user.Email</td>
+                                <td>@user.UserName</td>
+                                <td>
+                                    <img src="@(Boolean.Parse(identity.SingleOrDefault(p => p.Type == "IsActive").Value) ? "/images/green_tick.png" : "/images/red_cross.png")" width="30" height="30" />
+                                </td>
+                                <td>
+                                    <i class="small material-icons edit cursor-hand">mode_edit</i>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="card blue-grey lighten-1">
+                    <div class="card-content white-text">
+                        <span class="card-title">No Service Engineers!!!</span>
+                        <p>No Service Engineers found, please add a Service Engineer to system.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Details Section *@
+    <div class="row z-depth-3">
+        <div class="col s12 padding-0px">
+            <div class="section white-text padding-left-10px blue-grey lighten-1">
+                <h5>Service Engineer Details</h5>
+            </div>  
+            <div class="divider"></div>
+            <form asp-controller="Account" asp-action="ServiceEngineers" method="post" class="col s12" id="fromUser">
+                <div class="row">
+                    <input type="hidden" asp-for="ServiceEngineerRegistration.IsEdit" />
+
+                    <div class="input-field col s4">
+                        <input asp-for="ServiceEngineerRegistration.Email" id="Input_ServiceEnginnerRegistration_Email" />
+                        <label asp-for="ServiceEngineerRegistration.Email"></label>
+                    </div>
+                    <div class="input-field col s4">
+                        <input asp-for="ServiceEngineerRegistration.UserName" class="validate" />
+                        <label asp-for="ServiceEngineerRegistration.UserName"></label>
+                    </div>
+                    <div class="input-field col s4">
+                        <input asp-for="ServiceEngineerRegistration.Password" class="validate" />
+                        <label asp-for="ServiceEngineerRegistration.Password"></label>
+                    </div>
+                    <div class="input-field col s4">
+                        <input asp-for="ServiceEngineerRegistration.ConfirmPassword" class="validate" />
+                        <label asp-for="ServiceEngineerRegistration.ConfirmPassword"></label>
+                    </div>
+                    <div class="input-field col s4">
+                        <div class="switch">
+                            <label>
+                                Is Active
+                                <input asp-for="ServiceEngineerRegistration.IsActive" class="validate" />
+                                <span class="lever"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-field col s4 right-align">
+                        <button class="btn waves-effect waves-light btnSubmit" type="submit" name="action">
+                            Create
+                            <i class="material-icons right">send</i>
+                        </button>
+                        <button class="btn waves-effect waves-light reset red lighten-1" type="button" name="action">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="row col s12 right-align" asp-validation-summary="All"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // 1. Khởi tạo DataTable an toàn
+            try {
+                var table = $('#tblServiceEngineers').DataTable({
+                    'pageLength': 3,
+                    'lengthMenu': [[3, 5, 10, -1], [3, 5, 10, 'All']]
+                });
+                $('#tblServiceEngineers').css("width", "100%");
+                if ($.fn.formSelect) {
+                    $('select[name="tblServiceEngineers_length"]').formSelect();
+                }
+            } catch (e) {
+                console.error("Lỗi khởi tạo DataTable:", e);
+            }
+
+            // 2. Nút Reset Form
+            $(document).on("click", ".reset", function () {
+                $('#fromUser')[0].reset();
+                $('#Input_ServiceEnginnerRegistration_Email').removeAttr('readonly');
+                $('.btnSubmit').html('Create <i class="material-icons right">send</i>');
+                $('#ServiceEngineerRegistration_IsEdit').val('False');
+
+                // Bật lại Validate cho Password
+                try {
+                    var validator = $('#fromUser').validate();
+                    if (validator) {
+                        validator.settings.ignore = "";
+                    }
+                } catch (e) {}
+
+                if (typeof M !== 'undefined') M.updateTextFields();
+            });
+
+            // 3. Click Edit đổ dữ liệu lên Form
+            $(document).on('click', '.edit', function () {
+                try {
+                    // Lấy chính xác dòng (hỗ trợ cả responsive)
+                    var tr = $(this).closest('tr');
+                    if (tr.hasClass('child')) {
+                        tr = tr.prev('.parent');
+                    }
+
+                    var user = $('#tblServiceEngineers').DataTable().row(tr).data();
+
+                    if (user) {
+                        // Bật cờ Edit
+                        $('#ServiceEngineerRegistration_IsEdit').val('True');
+
+                        // Loại bỏ các thẻ HTML lồng bên trong Data (nếu có)
+                        var email = user[0] ? user[0].replace(/<[^>]*>?/gm, '').trim() : "";
+                        var name = user[1] ? user[1].replace(/<[^>]*>?/gm, '').trim() : "";
+
+                        // Đổ dữ liệu
+                        $('#Input_ServiceEnginnerRegistration_Email').val(email).attr('readonly', 'readonly');
+                        $('#ServiceEngineerRegistration_UserName').val(name).addClass('valid');
+
+                        // Check ảnh tick xanh để gán Switch
+                        var isActive = user[2] && user[2].indexOf("green_tick.png") !== -1;
+                        $('#ServiceEngineerRegistration_IsActive').prop('checked', isActive);
+
+                        // Đổi nút submit
+                        $('.btnSubmit').html('Change <i class="material-icons right">send</i>');
+
+                        // Cập nhật giao diện Materialize
+                        if (typeof M !== 'undefined') {
+                            M.updateTextFields();
+                        }
+
+                        // BỎ QUA Validate cho Password một cách an toàn (tránh văng lỗi)
+                        $('#ServiceEngineerRegistration_Password').removeClass('input-validation-error');
+                        $('#ServiceEngineerRegistration_ConfirmPassword').removeClass('input-validation-error');
+
+                        var formValidator = $('#fromUser').validate();
+                        if (formValidator) {
+                            formValidator.settings.ignore = "#ServiceEngineerRegistration_Password, #ServiceEngineerRegistration_ConfirmPassword";
+                        }
+                    }
+                } catch (ex) {
+                    console.error("Lỗi khi click Edit:", ex);
+                    alert("Có lỗi Javascript ngầm. Hãy nhấn F12 sang tab Console để xem chi tiết!");
+                }
+            });
+
+            // 4. Giữ trạng thái Form khi server trả về lỗi validation
+            if ($('#ServiceEngineerRegistration_IsEdit').val() === 'True') {
+                $('#Input_ServiceEnginnerRegistration_Email').attr('readonly', 'readonly');
+                $('.btnSubmit').html('Change <i class="material-icons right">send</i>');
+            }
+        });
+    </script>
+}

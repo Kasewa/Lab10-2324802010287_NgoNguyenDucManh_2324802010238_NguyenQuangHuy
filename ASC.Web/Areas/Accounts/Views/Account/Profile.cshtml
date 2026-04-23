@@ -1,0 +1,44 @@
+﻿@model ASC.Web.Areas.Accounts.Models.ProfileModel
+@{
+    Layout = "_SecureLayout";
+}
+<div class="row"></div>
+<div class="row padding-left-20px padding-right-20px">
+    @* Form cập nhật User Name *@
+    <div class="row z-depth-3">
+        <div class="col s12 padding-0px">
+            <div class="section white-text padding-left-10px blue-grey lighten-1">
+                <h5>Profile</h5>
+            </div>
+            <div class="divider"></div>
+            <form asp-controller="Account" asp-action="Profile" method="post" class="col s12" id="fromUser">
+                <div class="input-field col s8">
+                    <input asp-for="UserName" class="validate" />
+                    <label asp-for="UserName">UserName</label>
+                </div>
+                <div class="input-field col s4 right-align">
+                    <button class="btn waves-effect waves-light btnSubmit" type="submit" name="action">
+                        Save
+                        <i class="material-icons right">send</i>
+                    </button>
+                    <button class="btn waves-effect waves-light reset red lighten-1" type="button" name="action">
+                        Reset
+                    </button>
+                </div>
+                <div class="row col s12 right-align" asp-validation-summary="All"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Nút Reset cho form Profile
+            $(document).on("click", ".reset", function () {
+                $('#fromUser')[0].reset();
+                M.updateTextFields();
+            });
+        });
+    </script>
+}

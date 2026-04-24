@@ -1,3 +1,6 @@
+using ASC.Business;
+using ASC.Business.Interfaces;
+using ASC.Web.Data;
 using ASC.Web.Services;
 using Humanizer.Configuration;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +35,10 @@ namespace ASC.Web
 
                 options.CorrelationCookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
             });
+            //Add MasterDataOperations
+            services.AddScoped<IMasterDataOperations, MasterDataOperations>();
+            services.AddAutoMapper(typeof(ApplicationDbContext));
+            //
 
             return services;
         }
